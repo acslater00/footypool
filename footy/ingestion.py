@@ -112,9 +112,11 @@ def read_knockout_sheet(sheet):
     ]
 
     tiebreakers = {
-        'golden_ball' : sheet.cell(35, 2),
-        'golden_boot' : sheet.cell(36, 2),
-        'golden_glove' : sheet.cell(37, 2),
+        'golden_ball' : sheet.cell(35, 2).value,
+        'golden_boot' : sheet.cell(36, 2).value,
+        'golden_glove' : sheet.cell(37, 2).value,
+        'winner_score' : int(sheet.cell(40, 1).value),
+        'loser_score' : int(sheet.cell(41, 1).value),
     }
 
     data = {
@@ -140,7 +142,7 @@ def read_entry(path):
             'knockout' : knockout_data
         }
 
-from tables import Entrant, Game, Selection
+from tables import Entrant, Game, Selection, EntrantSelection
 import db
 
 def create_entrant(session, data):
@@ -256,11 +258,88 @@ def create_games(session, data):
 
     session.commit()
 
+def selection_id_for_group_winner(session, group_name):
+    description = "{} - Winner".format(group_name)
+    sid = session.query(Selection.id).filter_by(description=description).first()
+    return sid.id
+
+def selection_id_for_group_runnerup(session, group_name):
+    description = "{} - Runner Up".format(group_name)
+    sid = session.query(Selection.id).filter_by(description=description).first()
+    return sid.id
+
+def selection_id_for_tiebreaker(session, tiebreaker_name):
+    description = tiebreaker_name.replace("_", " ").title()
+    sid = session.query(Selection.id).filter_by(description=description).first()
+    return sid.id
+
+def selection_id_for_game_id(session, game_id):
+    sid = session.query(Selection.id).filter_by(game_id=game_id).first()
+    return sid.id
+
+def create_entrant_selections(session, data, entrant_id):
+
+    # for tiebreakers
+    for key, val in data['knockout']['tiebreakers'].iteritems():
+        selection_id = selection_id_for_tiebreaker(session, key)
+        es = EntrantSelection()
+        es.entrant_id = entrant_id
+        es.selection_id = selection_id
+        es.selection_value = val
+        session.merge(es)
+    session.commit()
+
+    # for group stage winners / runners up
+    for group in data['group']['groups']:
+        group_name = group['name']
+        winner_selection_id = selection_id_for_group_winner(session, group_name)
+        es = EntrantSelection()
+        es.entrant_id = entrant_id
+        es.selection_id = winner_selection_id
+        es.selection_value = group['winner']
+        session.merge(es)
+
+        runnerup_selection_id = selection_id_for_group_runnerup(session, group_name)
+        es = EntrantSelection()
+        es.entrant_id = entrant_id
+        es.selection_id = runnerup_selection_id
+        es.selection_value = group['runnerup']
+        session.merge(es)
+    session.commit()
+
+    # add game selections for group stage
+    for group in data['group']['groups']:
+        for match in group['matches']:
+            selection_id = selection_id_for_game_id(session, match['match_number'])
+            es = EntrantSelection()
+            es.entrant_id = entrant_id
+            es.selection_id = selection_id
+            es.selection_value = match['pick']
+            session.merge(es)
+    session.commit()
+
+    # add game selections for knockout stage
+    for key in ('round_of_16', 'quarter_finals', 'semi_finals', 'third_place_match', 'final'):
+        for match in data['knockout'][key]:
+            selection_id = selection_id_for_game_id(session, match['match_number'])
+            es = EntrantSelection()
+            es.entrant_id = entrant_id
+            es.selection_id = selection_id
+            es.selection_value = match['pick']
+            session.merge(es)
+    session.commit()
+
+
 def save_entry(data):
     """given entry data (output of read_entry) save to db"""
     session = db.session
+
     # create entrant
     entrant = create_entrant(session, data)
+
+    # create entrant selections
+    create_entrant_selections(session, data, entrant)
+
 
 if __name__ == '__main__':
 
