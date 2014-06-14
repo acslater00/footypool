@@ -127,11 +127,14 @@ def read_knockout_sheet(sheet):
     return data
 
 def read_entry(path):
-    book = xlrd.open_workbook(path)
-    group_sheet = book.sheets()[0]
-    knockout_sheet = book.sheets()[1]
+    with xlrd.open_workbook(path) as book:
+        group_sheet = book.sheets()[0]
+        knockout_sheet = book.sheets()[1]
 
-    group_data = read_group_sheet(group_sheet)
-    knockout_data = read_knockout_sheet(knockout_sheet)
+        group_data = read_group_sheet(group_sheet)
+        knockout_data = read_knockout_sheet(knockout_sheet)
 
-
+        return {
+            'group' : group_data,
+            'knockout' : knockout_data
+        }
