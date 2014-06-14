@@ -56,6 +56,8 @@ class Selection(DeclarativeBase):
     stage_id = Column(u'stage_id', INTEGER())
     game_id = Column(u'game_id', INTEGER())
     description = Column(u'description', VARCHAR(length=255))
+    actual_outcome = Column(u'actual_outcome', VARCHAR(length=255))
+
 
     #relation definitions
 
