@@ -1,6 +1,6 @@
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relation
+from sqlalchemy.orm import relation, backref
 
 DeclarativeBase = declarative_base()
 
@@ -16,20 +16,6 @@ class Entrant(DeclarativeBase):
     affiliation = Column(u'affiliation', VARCHAR(length=255))
 
     #relation definitions
-
-
-class EntrantSelection(DeclarativeBase):
-    __tablename__ = 'entrant_selection'
-
-    __table_args__ = {}
-
-    #column definitions
-    entrant_id = Column(u'entrant_id', INTEGER(), primary_key=True, nullable=False)
-    selection_id = Column(u'selection_id', INTEGER(), primary_key=True, nullable=False)
-    selection_value = Column(u'selection_value', VARCHAR(length=255))
-
-    #relation definitions
-
 
 class Game(DeclarativeBase):
     __tablename__ = 'game'
@@ -85,4 +71,18 @@ class Stage(DeclarativeBase):
 
     #relation definitions
 
+
+class EntrantSelection(DeclarativeBase):
+    __tablename__ = 'entrant_selection'
+
+    __table_args__ = {}
+
+    #column definitions
+    entrant_id = Column(u'entrant_id', INTEGER(), ForeignKey('entrant.id'), primary_key=True, nullable=False)
+    selection_id = Column(u'selection_id', INTEGER(), ForeignKey('selection.id'), primary_key=True, nullable=False)
+    selection_value = Column(u'selection_value', VARCHAR(length=255))
+
+    #relation definitions
+    entrant = relation(Entrant, primaryjoin=entrant_id == Entrant.id, backref=backref('entrant_selections', uselist=True), uselist=False)
+    selection = relation(Selection, primaryjoin=selection_id == Selection.id, backref=backref('entrant_selections', uselist=True), uselist=False)
 

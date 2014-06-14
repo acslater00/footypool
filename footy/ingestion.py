@@ -330,7 +330,6 @@ def create_entrant_selections(session, data, entrant_id):
             session.merge(es)
     session.commit()
 
-
 def save_entry(data):
     """given entry data (output of read_entry) save to db"""
     session = db.session
