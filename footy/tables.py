@@ -42,7 +42,8 @@ class Game(DeclarativeBase):
     title = Column(u'title', VARCHAR(length=255))
     team1 = Column(u'team1', VARCHAR(length=128))
     team2 = Column(u'team2', VARCHAR(length=128))
-    group = Column(u'group', INTEGER())
+    group_id = Column(u'group_id', INTEGER())
+    stage_id = Column(u'stage_id', INTEGER())
 
     #relation definitions
 

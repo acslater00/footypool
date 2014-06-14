@@ -1,3 +1,4 @@
+import datetime
 import xlrd
 
 def read_group(sheet, group_start_row):
@@ -15,7 +16,7 @@ def read_group(sheet, group_start_row):
     for i in range(6):
         row_num = group_start_row + i + 2
         match_number = int(sheet.cell(row_num, 0).value)
-        date = xlrd.xldate_as_tuple(sheet.cell(row_num, 1).value, sheet.book.datemode)
+        date = datetime.datetime(*xlrd.xldate_as_tuple(sheet.cell(row_num, 1).value, sheet.book.datemode))
         team_1 = sheet.cell(row_num,3).value
         team_2 = sheet.cell(row_num,4).value
         pick = sheet.cell(row_num, 6).value
@@ -62,8 +63,8 @@ def read_group_sheet(sheet):
 
 def read_knockout_game(sheet, row_num):
     """0 indexed row number"""
-    match_number = sheet.cell(row_num, 0)
-    date = xlrd.xldate_as_tuple(sheet.cell(row_num, 1).value, sheet.book.datemode)
+    match_number = int(sheet.cell(row_num, 0).value)
+    date = datetime.datetime(*xlrd.xldate_as_tuple(sheet.cell(row_num, 1).value, sheet.book.datemode))
     team_1 = sheet.cell(row_num,4).value
     team_2 = sheet.cell(row_num,5).value
     pick = sheet.cell(row_num,6).value
@@ -138,3 +139,131 @@ def read_entry(path):
             'group' : group_data,
             'knockout' : knockout_data
         }
+
+from tables import Entrant, Game, Selection
+import db
+
+def create_entrant(session, data):
+    name  = data['group']['name']
+    email = data['group']['email']
+    entrant = session.query(Entrant).filter_by(email=email).first() or Entrant()
+    entrant.name = name
+    entrant.email = email
+    session.merge(entrant)
+    session.commit()
+
+    # reread
+    entrant = session.query(Entrant).filter_by(email=email).first()
+    return entrant.id
+
+def group_to_group_id(group_letter):
+    if len(group_letter) != 1:
+        group_letter = group_letter.lower().replace("group", "").strip()
+    group_letter = group_letter.upper()
+    return ord(group_letter) - ord('A') + 1
+
+def create_knockout_games(session, data, stage_key, stage_name, stage_id):
+    for match in data['knockout'][stage_key]:
+        game = session.query(Game).filter_by(id=int(match['match_number'])).first() or Game()
+        game.id = match['match_number']
+        game.date = match['date']
+        game.team1 = None
+        game.team2 = None
+        game.title = "{} - Match {}".format(stage_name, game.id)
+        game.group_id = None
+        game.stage_id = stage_id
+        session.merge(game)
+
+        # add selection as well
+        selection = session.query(Selection).filter_by(game_id=game.id).first() or Selection()
+        selection.game_id = game.id
+        selection.stage_id = stage_id
+        selection.description = "Winner of {} - Game {}".format(stage_name, game.id)
+        session.merge(selection)
+
+def create_tiebreaker_selections(session, data):
+
+    s_golden_ball = session.query(Selection).filter_by(description="Golden Ball").first() or Selection()
+    s_golden_ball.description = "Golden Ball"
+    s_golden_ball.stage_id = 9
+    session.merge(s_golden_ball)
+
+    s_golden_boot = session.query(Selection).filter_by(description="Golden Boot").first() or Selection()
+    s_golden_boot.description = "Golden Boot"
+    s_golden_boot.stage_id = 9
+    session.merge(s_golden_boot)
+
+    s_golden_glove = session.query(Selection).filter_by(description="Golden Glove").first() or Selection()
+    s_golden_glove.description = "Golden Glove"
+    s_golden_glove.stage_id = 9
+    session.merge(s_golden_glove)
+
+    s_winner_score = session.query(Selection).filter_by(description="Winner Score").first() or Selection()
+    s_winner_score.description = "Winner Score"
+    s_winner_score.stage_id = 9
+    session.merge(s_winner_score)
+
+    s_loser_score = session.query(Selection).filter_by(description="Loser Score").first() or Selection()
+    s_loser_score.description = "Loser Score"
+    s_loser_score.stage_id = 9
+    session.merge(s_loser_score)
+
+def create_games(session, data):
+    group_data = data['group']
+    for group in group_data['groups']:
+        for match in group['matches']:
+            game = session.query(Game).filter_by(id=int(match['match_number'])).first() or Game()
+            game.id = match['match_number']
+            game.date = match['date']
+            game.team1 = match['team_1']
+            game.team2 = match['team_2']
+            game.title = "{} vs {} (Match {})".format(game.team1.title(), game.team2.title(), game.id)
+            game.group_id = group_to_group_id(group['name'])
+            session.merge(game)
+
+            # create a selection for this game
+            selection = session.query(Selection).filter_by(game_id=game.id).first() or Selection()
+            selection.game_id = game.id
+            selection.description = "Winner of {} - Game {}".format(group['name'], game.id)
+            selection.stage_id = 1
+            session.merge(selection)
+
+        # group winner / runner up selections
+        description = "{} - Winner".format(group['name'])
+        selection = session.query(Selection).filter_by(description=description).first() or Selection()
+        selection.description = description
+        selection.game_id = None
+        selection.stage_id = 2
+        session.merge(selection)
+
+        description = "{} - Runner Up".format(group['name'])
+        selection2 = session.query(Selection).filter_by(description=description).first() or Selection()
+        selection2.description = description
+        selection2.game_id = None
+        selection2.stage_id = 10
+        session.merge(selection2)
+
+    session.commit()
+
+    create_knockout_games(session, data, 'round_of_16', 'Round of 16', 3)
+    create_knockout_games(session, data, 'quarter_finals', 'Quarter Finals', 4)
+    create_knockout_games(session, data, 'semi_finals', 'Semi Finals', 5)
+    create_knockout_games(session, data, 'final', 'Finals', 7)
+    create_knockout_games(session, data, 'third_place_match', '3rd Place Match', 8)
+
+    # tiebreaker statge selections
+    create_tiebreaker_selections(session, data)
+
+    session.commit()
+
+def save_entry(data):
+    """given entry data (output of read_entry) save to db"""
+    session = db.session
+    # create entrant
+    entrant = create_entrant(session, data)
+
+if __name__ == '__main__':
+
+    data = read_entry("/Users/adamc/Desktop/2014-world-adam-cohen.xlsx")
+    #create_games(db.session, data)
+    save_entry(data)
