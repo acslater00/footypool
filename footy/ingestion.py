@@ -1,3 +1,4 @@
+import os
 import datetime
 import xlrd
 
@@ -340,9 +341,18 @@ def save_entry(data):
     # create entrant selections
     create_entrant_selections(session, data, entrant)
 
+def read_all_entries_for_directory(path):
+    for filename in os.listdir(path):
+        if "xlsx" in filename:
+            full_path = os.path.join(path, filename)
+            data = read_entry(full_path)
+            print 'reading', data['group']['name'], data['group']['email']
+            save_entry(data)
 
 if __name__ == '__main__':
 
-    data = read_entry("/Users/adamc/Desktop/2014-world-adam-cohen.xlsx")
-    #create_games(db.session, data)
-    save_entry(data)
+    # data = read_entry("/Users/adamc/Desktop/2014-world-adam-cohen.xlsx")
+    # #create_games(db.session, data)
+    # save_entry(data)
+
+    read_all_entries_for_directory("/Users/adamc/Desktop/world-cup-entries")
