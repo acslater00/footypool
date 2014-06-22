@@ -26,4 +26,9 @@ def jsonify_doc(data, **kwargs):
 
 @footy_http.route('/')
 def index():
+    return render_template('index.html')
+
+
+@footy_http.route('/_status')
+def status():
     return jsonify_doc({'status': 'OK'})
