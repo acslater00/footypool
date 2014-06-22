@@ -74,17 +74,21 @@ def picks(entrant_id):
 
     group_picks = {}
     for group, selection_ids in GROUPED_SELECTIONS.items():
-        datas = []
+        pick_datas = []
         for sid in selection_ids:
             es = es_by_selection_id[sid]
-            data = {
+            pick_data = {
                 'description' : es.selection.description,
                 'pick' : es.selection_value,
                 'actual' : es.selection.actual_outcome,
                 'outcome' : outcome_value(es.selection_value, es.selection.actual_outcome)
             }
-            datas.append(data)
-        group_picks[group] = datas
+            pick_datas.append(pick_data)
+        group_picks[group] = pick_datas
     data['group_picks'] = group_picks
+
+    points = 15
+    data['total_points'] = points
+
     return render_template("picks.html", **data)
 

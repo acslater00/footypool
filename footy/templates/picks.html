@@ -2,6 +2,7 @@
 {% block content %}
 
 <h1>{{entrant_name}}</h1>
+<h2>Total Points:</h2>{{total_points}}
 
 {% for key, value in group_picks.iteritems()|sort %}
     <h2>Group {{key}}</h2>
