@@ -14,6 +14,9 @@ from flask import (
     g
 )
 
+from footy import db
+from footy.tables import Entrant
+
 footy_http = Blueprint('footy_http', __name__)
 
 def jsonify_doc(data, **kwargs):
@@ -32,3 +35,56 @@ def index():
 @footy_http.route('/_status')
 def status():
     return jsonify_doc({'status': 'OK'})
+
+GROUPED_SELECTIONS = {
+    'A' : range(1,9),
+    'B' : range(9,17),
+    'C' : range(17,25),
+    'D' : range(25,33),
+    'E' : range(33,41),
+    'F' : range(41,49),
+    'G' : range(49,57),
+    'H' : range(57,65),
+}
+def selection_id_to_group(selection_id):
+    for g,v in GROUPED_SELECTIONS.items():
+        if selection_id in v:
+            return g
+    return None
+
+def outcome_value(selected, actual):
+    if actual is None:
+        return 0
+    elif selected == actual:
+        return 1
+    else:
+        return -1
+
+
+@footy_http.route('/picks/<int:entrant_id>')
+def picks(entrant_id):
+    entrant = db.session.query(Entrant).get(entrant_id)
+    data = {
+        'entrant_name' : entrant.name,
+        'entrant_email' : entrant.email
+    }
+
+    es = entrant.entrant_selections
+    es_by_selection_id = {es.selection_id : es for es in entrant.entrant_selections}
+
+    group_picks = {}
+    for group, selection_ids in GROUPED_SELECTIONS.items():
+        datas = []
+        for sid in selection_ids:
+            es = es_by_selection_id[sid]
+            data = {
+                'description' : es.selection.description,
+                'pick' : es.selection_value,
+                'actual' : es.selection.actual_outcome,
+                'outcome' : outcome_value(es.selection_value, es.selection.actual_outcome)
+            }
+            datas.append(data)
+        group_picks[group] = datas
+    data['group_picks'] = group_picks
+    return render_template("picks.html", **data)
+

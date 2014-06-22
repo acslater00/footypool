@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>{{entrant_name}}</h1>
+
+{% for key, value in group_picks.iteritems()|sort %}
+    <h2>Group {{key}}</h2>
+    <table class="table table-striped" style="table-layout: fixed">
+    <tr>
+        <th class="col-6">Match</th>
+        <th class="col-2">Pick</th>
+        <th class="col-2">Actual</th>
+        <th class="col-2">Result</th>
+    </tr>
+    {% for pick in value %}
+            <tr>
+                <td>{{pick.description}}</td>
+                <td>{{pick.pick}}</td>
+                <td>{{pick.actual}}</td>
+                <td>{{pick.outcome}}</td>
+            </tr>
+    {% endfor %}
+    </table>
+{% endfor %}
+
+{% endblock content %}
