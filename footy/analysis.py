@@ -14,8 +14,7 @@ def rankings(session):
 def print_rankings(session):
     entrants = rankings(session)
     for name, score in entrants:
-        print "{:30s}\t{} / 11 pts".format(name, score)
-
+        print "{:30s}\t{} / 22 pts".format(name, score)
 
 def selection_distribution(session, selection_id):
     ess = session.query(EntrantSelection.selection_value, func.count(1)).filter_by(selection_id=selection_id)
@@ -29,3 +28,6 @@ def selection_distribution_multi(session, selection_ids):
     ks = ess.group_by(EntrantSelection.selection_value).order_by(desc(func.count(1)))
     for pick, cnt in ks:
         print "{:20s}\t{}".format(pick, cnt)
+
+
+
