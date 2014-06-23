@@ -12,10 +12,10 @@ def rankings(session):
     return scored_entrants
 
 def print_rankings(session):
-    total = session.query(Selection).filter(Selection.actual_outcome != None).count()
+    total = score.total_points(session)
     entrants = rankings(session)
-    for name, score in entrants:
-        print "{:30s}\t{} / {} pts".format(name, score, total)
+    for name, pts in entrants:
+        print "{:30s}\t{} / {} pts".format(name, pts, total)
 
 def selection_distribution(session, selection_id):
     ess = session.query(EntrantSelection.selection_value, func.count(1)).filter_by(selection_id=selection_id)
