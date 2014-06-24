@@ -6,7 +6,7 @@ def rankings(session):
     entrants = session.query(Entrant).all()
     scored_entrants = []
     for entrant in entrants:
-        tup = (entrant.name.title(), score.score_entrant(session, entrant.id))
+        tup = (entrant, score.score_entrant(session, entrant.id))
         scored_entrants.append(tup)
     scored_entrants.sort(key=lambda t: t[1], reverse=True)
     return scored_entrants
@@ -14,8 +14,8 @@ def rankings(session):
 def print_rankings(session):
     total = score.total_points(session)
     entrants = rankings(session)
-    for name, pts in entrants:
-        print "{:30s}\t{} / {} pts".format(name, pts, total)
+    for entrant, pts in entrants:
+        print "{:30s}\t{} / {} pts".format(entrant.name, pts, total)
 
 def selection_distribution(session, selection_id):
     ess = session.query(EntrantSelection.selection_value, func.count(1)).filter_by(selection_id=selection_id)

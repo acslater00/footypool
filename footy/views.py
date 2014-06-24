@@ -16,6 +16,8 @@ from flask import (
 
 from footy import db
 from footy.tables import Entrant
+from footy import analysis
+from footy import score
 
 footy_http = Blueprint('footy_http', __name__)
 
@@ -55,7 +57,7 @@ def selection_id_to_group(selection_id):
 def outcome_value(selected, actual):
     if actual is None:
         return 0
-    elif selected == actual:
+    elif selected.lower() == actual.lower():
         return 1
     else:
         return -1
@@ -87,8 +89,23 @@ def picks(entrant_id):
         group_picks[group] = pick_datas
     data['group_picks'] = group_picks
 
-    points = 15
+    points = score.score_entrant(db.session, entrant_id)
     data['total_points'] = points
 
     return render_template("picks.html", **data)
+
+@footy_http.route('/standings')
+def standings():
+    data = {}
+    total = score.total_points(db.session)
+    entrants = analysis.rankings(db.session)
+    data['total'] = total
+    data['entrants'] = []
+    for entrant, pts in entrants:
+        data['entrants'].append({
+            'name' : entrant.name,
+            'link' : "/picks/{}".format(entrant.id),
+            'points' : pts
+        })
+    return render_template("standings.html", **data)
 
