@@ -96,7 +96,10 @@ def get_picks(session, entrant_id):
 
 @footy_http.route('/picks/<int:entrant_id>')
 def picks(entrant_id):
-    data = get_picks(entrant_id)
+    try:
+        data = get_picks(entrant_id)
+    except:
+        data = get_picks(entrant_id)
     return render_template("picks.html", **data)
 
 @db.with_session(db.maker)
@@ -116,6 +119,9 @@ def get_standings(session):
 
 @footy_http.route('/standings')
 def standings():
-    data = get_standings()
+    try:
+        data = get_standings()
+    except:
+        data = get_standings()
     return render_template("standings.html", **data)
 
