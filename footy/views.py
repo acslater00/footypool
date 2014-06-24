@@ -82,7 +82,7 @@ def picks(entrant_id):
             pick_data = {
                 'description' : es.selection.description,
                 'pick' : es.selection_value,
-                'actual' : es.selection.actual_outcome,
+                'actual' : es.selection.actual_outcome or '',
                 'outcome' : outcome_value(es.selection_value, es.selection.actual_outcome)
             }
             pick_datas.append(pick_data)

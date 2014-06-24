@@ -16,8 +16,8 @@
     {% for pick in value %}
             <tr>
                 <td>{{pick.description}}</td>
-                <td>{{pick.pick}}</td>
-                <td>{{pick.actual}}</td>
+                <td>{{pick.pick|title}}</td>
+                <td>{{pick.actual|title}}</td>
                 <td>{{pick.outcome}}</td>
             </tr>
     {% endfor %}
