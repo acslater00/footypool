@@ -50,6 +50,41 @@ def score_for_feeder_stage(session, entrant_id, feeder_stage_id, points_per_corr
             accum += points_per_correct
     return accum
 
+def octofinal_participants(session, entrant_id):
+    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id.in_([2,10])).filter(
+        EntrantSelection.entrant_id == entrant_id).filter(
+        EntrantSelection.selection_id == Selection.id)
+    chosen_list = [t[1].selection_value for t in ses]
+    return chosen_list
+
+def quarterfinal_participants(session, entrant_id):
+    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 3).filter(
+        EntrantSelection.entrant_id == entrant_id).filter(
+        EntrantSelection.selection_id == Selection.id)
+    chosen_list = [t[1].selection_value for t in ses]
+    return chosen_list
+
+def semifinal_participants(session, entrant_id):
+    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 4).filter(
+        EntrantSelection.entrant_id == entrant_id).filter(
+        EntrantSelection.selection_id == Selection.id)
+    chosen_list = [t[1].selection_value for t in ses]
+    return chosen_list
+
+def final_participants(session, entrant_id):
+    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 5).filter(
+        EntrantSelection.entrant_id == entrant_id).filter(
+        EntrantSelection.selection_id == Selection.id)
+    chosen_list = [t[1].selection_value for t in ses]
+    return chosen_list
+
+def champion(session, entrant_id):
+    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 7).filter(
+        EntrantSelection.entrant_id == entrant_id).filter(
+        EntrantSelection.selection_id == Selection.id)
+    chosen_list = [t[1].selection_value for t in ses]
+    return chosen_list
+
 def score_group_stage_matches(session, entrant_id):
     return score_for_matching_value(session, entrant_id, stage_id=1, points_per_correct=1)
 
