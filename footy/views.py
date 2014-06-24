@@ -62,10 +62,9 @@ def outcome_value(selected, actual):
     else:
         return -1
 
-
-@footy_http.route('/picks/<int:entrant_id>')
-def picks(entrant_id):
-    entrant = db.session.query(Entrant).get(entrant_id)
+@db.with_session(db.maker)
+def get_picks(session, entrant_id):
+    entrant = session.query(Entrant).get(entrant_id)
     data = {
         'entrant_name' : entrant.name,
         'entrant_email' : entrant.email
@@ -89,18 +88,22 @@ def picks(entrant_id):
         group_picks[group] = pick_datas
     data['group_picks'] = group_picks
 
-    points = score.score_entrant(db.session, entrant_id)
+    points = score.score_entrant(session, entrant_id)
     data['total_points'] = points
-    possible_points = score.total_points(db.session)
+    possible_points = score.total_points(session)
     data['possible_points'] = possible_points
+    return data
 
+@footy_http.route('/picks/<int:entrant_id>')
+def picks(entrant_id):
+    data = get_picks(entrant_id)
     return render_template("picks.html", **data)
 
-@footy_http.route('/standings')
-def standings():
+@db.with_session(db.maker)
+def get_standings(session):
     data = {}
-    total = score.total_points(db.session)
-    entrants = analysis.rankings(db.session)
+    total = score.total_points(session)
+    entrants = analysis.rankings(session)
     data['total'] = total
     data['entrants'] = []
     for entrant, pts in entrants:
@@ -109,5 +112,10 @@ def standings():
             'link' : "/picks/{}".format(entrant.id),
             'points' : pts
         })
+    return data
+
+@footy_http.route('/standings')
+def standings():
+    data = get_standings()
     return render_template("standings.html", **data)
 
