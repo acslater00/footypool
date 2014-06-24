@@ -3,6 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    DATABASE_URL = os.environ.get('CLEARDB_DATABASE_URL')
 
 def getSqlAlchemyConnection(connection_string, echo=False, pool_size=6):
     engine = create_engine(connection_string, echo=echo, pool_size=pool_size, pool_recycle=3600)
