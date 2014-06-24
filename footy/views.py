@@ -91,6 +91,8 @@ def picks(entrant_id):
 
     points = score.score_entrant(db.session, entrant_id)
     data['total_points'] = points
+    possible_points = score.total_points(db.session)
+    data['possible_points'] = possible_points
 
     return render_template("picks.html", **data)
 

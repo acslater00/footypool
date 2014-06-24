@@ -2,7 +2,9 @@
 {% block content %}
 
 <h1>{{entrant_name}}</h1>
-<h2>Total Points:</h2>{{total_points}}
+<h3 style="background-color: #5bc0de; padding: 5px">Total Points: {{total_points}} / {{possible_points}} possible</h3>
+
+
 
 {% for key, value in group_picks.iteritems()|sort %}
     <h2>Group {{key}}</h2>
@@ -11,14 +13,20 @@
         <th class="col-6">Match</th>
         <th class="col-2">Pick</th>
         <th class="col-2">Actual</th>
-        <th class="col-2">Result</th>
+        <th class="col-2" style="text-align: center">Result</th>
     </tr>
     {% for pick in value %}
             <tr>
                 <td>{{pick.description}}</td>
                 <td>{{pick.pick|title}}</td>
                 <td>{{pick.actual|title}}</td>
-                <td>{{pick.outcome}}</td>
+                <td>
+                    {% if pick.outcome == 1 %}
+                        <div style="background-color: #dff0d8; text-align: center">Correct</div>
+                    {% elif pick.outcome == -1 %}
+                        <div style="background-color: #f2dede; text-align: center">Incorrect</div>
+                    {% endif %}
+                </td>
             </tr>
     {% endfor %}
     </table>
