@@ -3,7 +3,7 @@ from tables import Entrant, Game, Selection, EntrantSelection
 def match(v1, v2):
     if v1 is None or v2 is None:
         return False
-    if v1.lower() == v2.lower():
+    if v1.lower().strip() == v2.lower().strip():
         return True
     return False
 

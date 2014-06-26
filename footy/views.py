@@ -57,7 +57,7 @@ def selection_id_to_group(selection_id):
 def outcome_value(selected, actual):
     if actual is None:
         return 0
-    elif selected.lower() == actual.lower():
+    elif selected.lower().strip() == actual.lower().strip():
         return 1
     else:
         return -1
