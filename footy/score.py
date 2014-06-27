@@ -50,40 +50,62 @@ def score_for_feeder_stage(session, entrant_id, feeder_stage_id, points_per_corr
             accum += points_per_correct
     return accum
 
-def octofinal_participants(session, entrant_id):
+def participants_and_correct_scores(session, entrant_id, stages):
+    if isinstance(stages, int):
+        stages = [stages]
+    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id.in_(stages)).filter(
+        EntrantSelection.entrant_id == entrant_id).filter(
+        EntrantSelection.selection_id == Selection.id)
+    chosen_list = [t[1].selection_value for t in ses]
+    selection_objects = [s[0] for s in ses]
+    ret = []
+    for chosen in chosen_list:
+        valid = -1
+        all_null = True
+        for s in selection_objects:
+            if match(s.game.team1, chosen) or match(s.game.team2, chosen):
+                found = True
+                if s.actual_outcome is None:
+                    valid = 0
+                elif match(s.actual_outcome, chosen):
+                    valid = 1
+                else:
+                    valid = -1
+            if s.game.team1 or s.game.team2:
+                all_null = False
+        if all_null and valid == -1:
+            valid = 0
+        ret.append((chosen, valid))
+    return ret
+
+def octofinal_participants_and_correct_values(session, entrant_id):
     ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id.in_([2,10])).filter(
         EntrantSelection.entrant_id == entrant_id).filter(
         EntrantSelection.selection_id == Selection.id)
     chosen_list = [t[1].selection_value for t in ses]
-    return chosen_list
+    winner_list = [t[0].actual_outcome for t in ses]
+    rets = []
+    for c in chosen_list:
+        if any([match(c, t) for t in winner_list]):
+            rets.append((c, 1))
+        else:
+            rets.append((c, -1))
+    return rets
 
-def quarterfinal_participants(session, entrant_id):
-    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 3).filter(
-        EntrantSelection.entrant_id == entrant_id).filter(
-        EntrantSelection.selection_id == Selection.id)
-    chosen_list = [t[1].selection_value for t in ses]
-    return chosen_list
+def quarterfinal_participants_and_correct_values(session, entrant_id):
+    return participants_and_correct_scores(session, entrant_id, 3)
 
-def semifinal_participants(session, entrant_id):
-    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 4).filter(
-        EntrantSelection.entrant_id == entrant_id).filter(
-        EntrantSelection.selection_id == Selection.id)
-    chosen_list = [t[1].selection_value for t in ses]
-    return chosen_list
+def semifinal_participants_and_correct_values(session, entrant_id):
+    return participants_and_correct_scores(session, entrant_id, 4)
 
-def final_participants(session, entrant_id):
-    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 5).filter(
-        EntrantSelection.entrant_id == entrant_id).filter(
-        EntrantSelection.selection_id == Selection.id)
-    chosen_list = [t[1].selection_value for t in ses]
-    return chosen_list
+def final_participants_and_correct_values(session, entrant_id):
+    return participants_and_correct_scores(session, entrant_id, 5)
 
 def champion(session, entrant_id):
-    ses = session.query(Selection, EntrantSelection).filter(Selection.stage_id == 7).filter(
-        EntrantSelection.entrant_id == entrant_id).filter(
-        EntrantSelection.selection_id == Selection.id)
-    chosen_list = [t[1].selection_value for t in ses]
-    return chosen_list
+    return participants_and_correct_scores(session, entrant_id, 7)
+
+def third_place(session, entrant_id):
+    return participants_and_correct_scores(session, entrant_id, 8)
 
 def score_group_stage_matches(session, entrant_id):
     return score_for_matching_value(session, entrant_id, stage_id=1, points_per_correct=1)

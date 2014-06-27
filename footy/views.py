@@ -92,6 +92,14 @@ def get_picks(session, entrant_id):
     data['total_points'] = points
     possible_points = score.total_points(session)
     data['possible_points'] = possible_points
+
+    data['octofinal_participants'] = score.octofinal_participants_and_correct_values(session, entrant_id)
+    data['quarterfinal_participants'] = score.quarterfinal_participants_and_correct_values(session, entrant_id)
+    data['semifinal_participants'] = score.semifinal_participants_and_correct_values(session, entrant_id)
+    data['final_participants'] = score.final_participants_and_correct_values(session, entrant_id)
+    data['champion'] = score.champion(session, entrant_id)
+    data['third_place'] = score.third_place(session, entrant_id)
+
     return data
 
 @footy_http.route('/picks/<int:entrant_id>')

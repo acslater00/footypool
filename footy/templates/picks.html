@@ -4,8 +4,91 @@
 <h1>{{entrant_name}}</h1>
 <h3 style="background-color: #5bc0de; padding: 5px">Total Points: {{total_points}} / {{possible_points}} possible</h3>
 
+<h1>Knockout Stage</h2>
+
+<h3>Round Of 16</h3>
+<span></span>
+<div class="row">
+{% for p in octofinal_participants %}
+    <div class="col-md-2">
+        {% if p[1] == 1%}
+            <p style="color: green">{{p[0]}}</p>
+        {% elif p[1] == -1 %}
+        <p style="color: red">{{p[0]}}</p>
+        {% else %}
+        <p style="color: black">{{p[0]}}</p>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
+
+<h3>Quarter Finals</h3>
+<div class="row">
+{% for p in quarterfinal_participants %}
+    <div class="col-md-2">
+        {% if p[1] == 1%}
+            <p style="color: green">{{p[0]}}</p>
+        {% elif p[1] == -1 %}
+        <p style="color: red">{{p[0]}}</p>
+        {% else %}
+        <p style="color: black">{{p[0]}}</p>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
+
+<h3>Semi Finals</h3>
+<div class="row">
+{% for p in semifinal_participants %}
+    <div class="col-md-2">
+        {% if p[1] == 1%}
+            <p style="color: green">{{p[0]}}</p>
+        {% elif p[1] == -1 %}
+        <p style="color: red">{{p[0]}}</p>
+        {% else %}
+        <p style="color: black">{{p[0]}}</p>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
+
+<h3>Finals</h3>
+<div class="row">
+{% for p in final_participants %}
+    <div class="col-md-2">
+        {% if p[1] == 1%}
+            <p style="color: green">{{p[0]}}</p>
+        {% elif p[1] == -1 %}
+        <p style="color: red">{{p[0]}}</p>
+        {% else %}
+        <p style="color: black">{{p[0]}}</p>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
 
 
+
+<h3>World Cup Champion</h3>
+{% if champion[0][1] == 1%}
+    <p style="color: green">{{champion[0][0]}}</p>
+{% elif champion[0][1] == -1 %}
+<p style="color: red">{{champion[0][0]}}</p>
+{% else %}
+<p style="color: black">{{champion[0][0]}}</p>
+{% endif %}
+
+<h3>Third Place</h3>
+{% if third_place[0][1] == 1%}
+    <p style="color: green">{{third_place[0][0]}}</p>
+{% elif third_place[0][1] == -1 %}
+<p style="color: red">{{third_place[0][0]}}</p>
+{% else %}
+<p style="color: black">{{third_place[0][0]}}</p>
+{% endif %}
+
+
+<h1>Group Stage</h2>
 {% for key, value in group_picks.iteritems()|sort %}
     <h2>Group {{key}}</h2>
     <table class="table table-striped" style="table-layout: fixed">

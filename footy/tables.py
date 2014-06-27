@@ -54,10 +54,11 @@ class Selection(DeclarativeBase):
     #column definitions
     id = Column(u'id', INTEGER(), primary_key=True, nullable=False)
     stage_id = Column(u'stage_id', INTEGER())
-    game_id = Column(u'game_id', INTEGER())
+    game_id = Column(u'game_id', INTEGER(), ForeignKey('game.id'))
     description = Column(u'description', VARCHAR(length=255))
     actual_outcome = Column(u'actual_outcome', VARCHAR(length=255))
 
+    game = relation(Game, primaryjoin=game_id == Game.id, backref=backref('game_selections', uselist=True), uselist=False)
 
     #relation definitions
 
