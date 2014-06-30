@@ -62,6 +62,7 @@ def participants_and_correct_scores(session, entrant_id, stages):
     for chosen in chosen_list:
         valid = -1
         all_null = True
+        any_null = False
         for s in selection_objects:
             if match(s.game.team1, chosen) or match(s.game.team2, chosen):
                 found = True
@@ -73,7 +74,9 @@ def participants_and_correct_scores(session, entrant_id, stages):
                     valid = -1
             if s.game.team1 or s.game.team2:
                 all_null = False
-        if all_null and valid == -1:
+            if s.game.team1 is None or s.game.team2 is None:
+                any_null = True
+        if (all_null or any_null) and valid == -1:
             valid = 0
         ret.append((chosen, valid))
     return ret
